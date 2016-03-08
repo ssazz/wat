@@ -1,1 +1,96 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+	<meta charset="UTF-8">
+	<title>jellyfish</title>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+window.onload = function() {
+var canvas = document.getElementById("canvas"),
+         c = canvas.getContext("2d"),
+     width = canvas.width = window.innerWidth,
+    height = canvas.height = window.innerHeight,
+         R = 0.0125 * Math.max(height, width),
+   offsetR = R * 5,
+         r = 3,
+startAngle = 0,
+      dots = 12,
+     slice = 2 * Math.PI / dots,
+         k = 0,
+      step = Math.PI / 30,
+    target = { 
+		       x: width  / 2, 
+			   y: height / 2 
+			 },
+    points = [],
+numCircles = 10,
+       max = 5,
+      ease = 0.1,
+deltaAngle = Math.PI/10,
+         x,
+         y;
 
+for (var i = 0; i < numCircles; i++) {
+	points.push({
+		x: width / 2,
+		y: height / 2
+	});
+}
+
+update();
+
+document.body.addEventListener( "mousemove", function( e ) {
+	target.x = e.clientX;
+	target.y = e.clientY;
+});
+
+function update() {
+	c.clearRect( 0, 0, width, height );
+	
+	var leader = {
+		x: target.x,
+		y: target.y
+	};
+    
+    var distance = Math.sqrt(
+		Math.pow( leader.x - points[points.length-1].x, 2 )
+		+
+		Math.pow( leader.y - points[points.length-1].y, 2 )
+	);
+    
+    deltaAngle = Math.PI / 10 * (( distance + 100 ) / Math.max( width, height ));
+
+	for (var i = 0; i < numCircles; i++) {
+		var point = points[i];
+		point.x += ( leader.x - point.x ) * ease;
+		point.y += ( leader.y - point.y ) * ease;
+		var tmpAngle = Math.sin( k + Math.PI/dots * i ),
+			tmpRadius = R * ( i + 1 ) + offsetR;
+		
+		for (var j = 0; j < dots; j++) {
+			startAngle = j * slice;
+			c.beginPath();
+			c.arc(
+				Math.cos( startAngle + tmpAngle * deltaAngle ) * tmpRadius + point.x,
+				Math.sin( startAngle + tmpAngle * deltaAngle ) * tmpRadius + point.y,
+				r,
+				0,
+				2 * Math.PI,
+				false
+			);
+			c.fill(); 
+		}
+
+		leader.x = point.x;
+		leader.y = point.y;
+		k += 0.015;
+	}
+	requestAnimationFrame( update );
+} // end of update();
+
+};
+</script>
+</body>
+</html>
